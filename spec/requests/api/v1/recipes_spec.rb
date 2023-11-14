@@ -2,6 +2,7 @@ require 'rails_helper'
 
 describe 'Api V1 recipes', type: :request do
   let(:recipe) { create(:recipe) }
+  let(:token) { user_token(user) }
 
   let(:recipe_response) do
     {
@@ -29,11 +30,11 @@ describe 'Api V1 recipes', type: :request do
 
   describe 'POST /api/v1/recipes' do
     let!(:user) { create(:user) }
-    let(:token) { 'JWT_TOKEN' }
 
     context 'when user is unauthorized' do
+      let(:token) { 'invalid_token' }
+
       before do
-        allow(JwtWrapper).to receive(:decode).and_raise(JWT::DecodeError)
         post '/api/v1/recipes', headers: { 'Authorization' => token }
       end
 
@@ -45,7 +46,7 @@ describe 'Api V1 recipes', type: :request do
 
     context 'when user is not found' do
       before do
-        allow(JwtWrapper).to receive(:decode).with(token).and_return({ user_id: 'not_found' })
+        allow(User).to receive(:find).with(user.id).and_raise(ActiveRecord::RecordNotFound)
         post '/api/v1/recipes', headers: { 'Authorization' => token }
       end
 
@@ -57,7 +58,6 @@ describe 'Api V1 recipes', type: :request do
 
     context 'when it is successful' do
       before do
-        allow(JwtWrapper).to receive(:decode).with(token).and_return({ user_id: user.id })
         post '/api/v1/recipes', params: params, headers: { 'Authorization' => token }
       end
 
@@ -80,7 +80,6 @@ describe 'Api V1 recipes', type: :request do
 
     context 'when there is an error saving the recipe' do
       before do
-        allow(JwtWrapper).to receive(:decode).with(token).and_return({ user_id: user.id })
         post '/api/v1/recipes', params: params, headers: { 'Authorization' => token }
       end
 

@@ -10,7 +10,7 @@ class ApplicationController < ActionController::API
     token = auth_header.split(' ').last if auth_header
 
     begin
-      user_id = JwtWrapper.decode(token).dig(:user_id)
+      user_id = JwtWrapper.decode(token).dig('user_id')
       User.find(user_id)
     rescue ActiveRecord::RecordNotFound => e
       render json: { error: 'Unauthorized' }, status: :unauthorized
