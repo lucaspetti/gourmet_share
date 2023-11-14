@@ -14,7 +14,7 @@ module Api
         recipe.user = current_user
 
         if recipe.save
-          render json: recipe
+          render json: recipe, status: :created
         else
           render json: { "error": "Could not create recipe" }, status: :unprocessable_entity
         end

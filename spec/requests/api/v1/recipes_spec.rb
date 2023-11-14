@@ -3,6 +3,9 @@ require 'rails_helper'
 describe 'Api V1 recipes', type: :request do
   let(:recipe) { create(:recipe) }
   let(:token) { user_token(user) }
+  let(:headers) do
+    { 'Authorization' => "Bearer #{token}" }
+  end
 
   let(:recipe_response) do
     {
@@ -35,7 +38,7 @@ describe 'Api V1 recipes', type: :request do
       let(:token) { 'invalid_token' }
 
       before do
-        post '/api/v1/recipes', headers: { 'Authorization' => token }
+        post '/api/v1/recipes', headers: headers
       end
 
       it 'returns a 401 response' do
@@ -47,7 +50,7 @@ describe 'Api V1 recipes', type: :request do
     context 'when user is not found' do
       before do
         allow(User).to receive(:find).with(user.id).and_raise(ActiveRecord::RecordNotFound)
-        post '/api/v1/recipes', headers: { 'Authorization' => token }
+        post '/api/v1/recipes', headers: headers
       end
 
       it 'returns a 401 response' do
@@ -58,7 +61,7 @@ describe 'Api V1 recipes', type: :request do
 
     context 'when it is successful' do
       before do
-        post '/api/v1/recipes', params: params, headers: { 'Authorization' => token }
+        post '/api/v1/recipes', params: params, headers: headers
       end
 
       let(:params) do
@@ -73,14 +76,14 @@ describe 'Api V1 recipes', type: :request do
       end
 
       it 'returns a successful response' do
-        expect(response.status).to eq(200)
-        expect(response.body).to eq(Recipe.first.to_json)
+        expect(response.status).to eq(201)
+        expect(response.body).to eq(Recipe.last.to_json)
       end
     end
 
     context 'when there is an error saving the recipe' do
       before do
-        post '/api/v1/recipes', params: params, headers: { 'Authorization' => token }
+        post '/api/v1/recipes', params: params, headers: headers
       end
 
       let(:params) do
