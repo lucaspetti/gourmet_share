@@ -1,7 +1,8 @@
 module Api
   module V1
     class RecipesController < ApplicationController
-      # before_action :authorize_request, except: [:index, :show]
+      before_action :authenticate_user, except: [:index, :show]
+      before_action :set_recipe, only: [:show, :update, :destroy]
 
       def index
         @recipes = Recipe.all
@@ -10,32 +11,34 @@ module Api
 
       def create
         recipe = Recipe.new(recipe_params)
+        recipe.user = current_user
+
         if recipe.save
           render json: recipe
         else
-          render json: { "error": "" }, status: :unprocessable_entity
+          render json: { "error": "Could not create recipe" }, status: :unprocessable_entity
         end
       end
 
       def show
-        @recipe = Recipe.find(params[:id])
         render json: @recipe
-      rescue ActiveRecord::RecordNotFound => e
-        render json: { error: "Not found" }, status: :not_found
       end
-
-      def update; end
 
       # TODO: define if this will go to a new model RecipeUpload
       def bulk_upload; end
 
-      def delete; end
-
       private
 
+      def set_recipe
+        @recipe = Recipe.find(params[:id])
+      rescue ActiveRecord::RecordNotFound => e
+        render json: { error: "Not found" }, status: :not_found
+      end
+
       def recipe_params
-        # TODO: specify params here
-        params.require(:recipe).permit!
+        params.require(:recipe).permit(
+          :title, :description, :ingredients, :preparation_steps
+        )
       end
     end
   end

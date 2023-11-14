@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe 'Api V1 recipes', type: :request do
-  let(:user) { create(:user) }
   let(:recipe) { create(:recipe) }
 
   let(:recipe_response) do
@@ -25,6 +24,78 @@ describe 'Api V1 recipes', type: :request do
     it 'returns all created recipes in json format' do
       expect(response.status).to eq(200)
       expect(response.body).to eq([recipe_response].to_json)
+    end
+  end
+
+  describe 'POST /api/v1/recipes' do
+    let!(:user) { create(:user) }
+    let(:token) { 'JWT_TOKEN' }
+
+    context 'when user is unauthorized' do
+      before do
+        allow(JwtWrapper).to receive(:decode).and_raise(JWT::DecodeError)
+        post '/api/v1/recipes', headers: { 'Authorization' => token }
+      end
+
+      it 'returns a 401 response' do
+        expect(response.status).to eq(401)
+        expect(response.body).to eq({ "error": "Unauthorized" }.to_json)
+      end
+    end
+
+    context 'when user is not found' do
+      before do
+        allow(JwtWrapper).to receive(:decode).with(token).and_return({ user_id: 'not_found' })
+        post '/api/v1/recipes', headers: { 'Authorization' => token }
+      end
+
+      it 'returns a 401 response' do
+        expect(response.status).to eq(401)
+        expect(response.body).to eq({ "error": "Unauthorized" }.to_json)
+      end
+    end
+
+    context 'when it is successful' do
+      before do
+        allow(JwtWrapper).to receive(:decode).with(token).and_return({ user_id: user.id })
+        post '/api/v1/recipes', params: params, headers: { 'Authorization' => token }
+      end
+
+      let(:params) do
+        {
+          recipe: {
+            title: 'Spaghetti',
+            description: 'A nice dish',
+            ingredients: [],
+            preparation_steps: []
+          }
+        }
+      end
+
+      it 'returns a successful response' do
+        expect(response.status).to eq(200)
+        expect(response.body).to eq(Recipe.first.to_json)
+      end
+    end
+
+    context 'when there is an error saving the recipe' do
+      before do
+        allow(JwtWrapper).to receive(:decode).with(token).and_return({ user_id: user.id })
+        post '/api/v1/recipes', params: params, headers: { 'Authorization' => token }
+      end
+
+      let(:params) do
+        {
+          recipe: {
+            title: 'Spaghetti'
+          }
+        }
+      end
+
+      it 'returns a 422 response' do
+        expect(response.status).to eq(422)
+        expect(response.body).to eq({ "error": "Could not create recipe" }.to_json)
+      end
     end
   end
 
