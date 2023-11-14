@@ -10,7 +10,7 @@ class Recipe < ApplicationRecord
   validates_uniqueness_of :title, scope: :user_id
   validate :validate_image_type
 
-  # TODO: after_create :notify_users
+  after_create_commit :notify_users
 
   def validate_image_type
     if image.attached? && !image.content_type.in?(%w(image/jpeg image/png))
@@ -22,11 +22,17 @@ class Recipe < ApplicationRecord
     options[:except] = [:user_id, :updated_at]
     super(options).tap do |recipe|
       recipe['author'] = user.email
-      recipe['image_url'] = image_url
+      recipe['image_url'] = image_url if image.attached?
     end
   end
 
   def image_url
     url_for(image) if image.attached?
+  end
+
+  private
+
+  def notify_users
+    RecipeCreatedJob.perform_later(self)
   end
 end

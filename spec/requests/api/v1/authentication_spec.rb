@@ -49,7 +49,7 @@ describe 'Api V1 authentication', type: :request do
 
       it 'returns successful response with Bearer token' do
         expect(response.status).to eq(200)
-        expect(response.body).to eq({ "error": "Unauthorized" }.to_json)
+        expect(response.body).to include('token')
       end
     end
   end
