@@ -1,7 +1,7 @@
 module Api
   module V1
     class RecipeUploadsController < ApplicationController
-      before_action :authenticate_user
+      before_action :doorkeeper_authorize!
 
       def create
         recipe_upload = RecipeUpload.new(recipe_upload_params)

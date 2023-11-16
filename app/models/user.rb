@@ -17,4 +17,9 @@ class User < ApplicationRecord
   validates :email, presence: true
   validates :first_name, presence: true
   validates :last_name, presence: true
+
+  def self.authenticate!(email, password)
+    user = find_by(email: email.downcase)
+    user if user&.valid_password?(password)
+  end
 end

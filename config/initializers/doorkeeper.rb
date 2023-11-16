@@ -7,8 +7,11 @@ Doorkeeper.configure do
 
   # This block will be called to check whether the resource owner is authenticated or not.
   resource_owner_authenticator do
-    # Put your resource owner authentication logic here.
-    current_user || warden.authenticate!(scope: :user)
+    # current_user || warden.authenticate!(scope: :user)
+  end
+
+  resource_owner_from_credentials do |_routes|
+    User.authenticate!(params[:email], params[:password])
   end
 
   # If you didn't skip applications controller from Doorkeeper routes in your application routes.rb
@@ -91,7 +94,7 @@ Doorkeeper.configure do
   # Access token expiration time (default: 2 hours).
   # If you want to disable expiration, set this to `nil`.
   #
-  # access_token_expires_in 2.hours
+  access_token_expires_in 2.hours
 
   # Assign custom TTL for access tokens. Will be used instead of access_token_expires_in
   # option if defined. In case the block returns `nil` value Doorkeeper fallbacks to
@@ -120,7 +123,7 @@ Doorkeeper.configure do
   # +ActionController::API+. The return value of this option must be a stringified class name.
   # See https://doorkeeper.gitbook.io/guides/configuration/other-configurations#custom-controllers
   #
-  base_controller 'ActionController::API'
+  # base_controller 'ActionController::API'
 
   # Reuse access token for the same resource owner within an application (disabled by default).
   #
@@ -214,7 +217,7 @@ Doorkeeper.configure do
   # `grant_type` - the grant type of the request (see Doorkeeper::OAuth)
   # `scopes` - the requested scopes (see Doorkeeper::OAuth::Scopes)
   #
-  # use_refresh_token
+  use_refresh_token
 
   # Provide support for an owner to be assigned to each registered application (disabled by default)
   # Optional parameter confirmation: true (default: false) if you want to enforce ownership of
@@ -227,7 +230,7 @@ Doorkeeper.configure do
   # Define access token scopes for your provider
   # For more information go to
   # https://doorkeeper.gitbook.io/guides/ruby-on-rails/scopes
-  # default_scopes :read
+  # default_scopes :read, :write
   # optional_scopes :write, :update
 
   # Allows to restrict only certain scopes for grant_type.
@@ -251,7 +254,7 @@ Doorkeeper.configure do
   # Check out https://github.com/doorkeeper-gem/doorkeeper/wiki/Changing-how-clients-are-authenticated
   # for more information on customization
   #
-  # client_credentials :from_basic, :from_params
+  client_credentials :from_basic, :from_params
 
   # Change the way access token is authenticated from the request object.
   # By default it retrieves first from the `HTTP_AUTHORIZATION` header, then
@@ -259,7 +262,7 @@ Doorkeeper.configure do
   # Check out https://github.com/doorkeeper-gem/doorkeeper/wiki/Changing-how-clients-are-authenticated
   # for more information on customization
   #
-  # access_token_methods :from_bearer_authorization, :from_access_token_param, :from_bearer_param
+  access_token_methods :from_bearer_authorization, :from_access_token_param, :from_bearer_param
 
   # Forces the usage of the HTTPS protocol in non-native redirect uris (enabled
   # by default in non-development environments). OAuth2 delegates security in
@@ -344,7 +347,7 @@ Doorkeeper.configure do
   #   https://datatracker.ietf.org/doc/html/rfc6819#section-4.4.2
   #   https://datatracker.ietf.org/doc/html/rfc6819#section-4.4.3
   #
-  # grant_flows %w[authorization_code client_credentials]
+  grant_flows %w[authorization_code client_credentials password]
 
   # Allows to customize OAuth grant flows that +each+ application support.
   # You can configure a custom block (or use a class respond to `#call`) that must

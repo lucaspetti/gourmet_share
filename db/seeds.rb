@@ -37,4 +37,10 @@ recipe = {
 
 Recipe.create(recipe)
 
-Doorkeeper::Application.create(name: "Client App 1", redirect_uri: "urn:ietf:wg:oauth:2.0:oob", scopes: ["read", "write"])
+Doorkeeper::Application.create(
+  name: "Client App 1",
+  uid: "client_app_uid",
+  secret: "client_app_secret",
+  redirect_uri: "urn:ietf:wg:oauth:2.0:oob",
+  scopes: ["read", "write"]
+)

@@ -1,6 +1,7 @@
 module Api
   module V1
     class RecipesController < ApplicationController
+      before_action :doorkeeper_authorize!
       before_action :authenticate_user, except: [:index, :show]
       before_action :set_recipe, only: [:show, :update, :destroy]
 
@@ -23,9 +24,6 @@ module Api
       def show
         render json: @recipe
       end
-
-      # TODO: define if this will go to a new model RecipeUpload
-      def bulk_upload; end
 
       private
 

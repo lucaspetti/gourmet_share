@@ -1,11 +1,13 @@
 Rails.application.routes.draw do
-  use_doorkeeper
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   namespace :api do
     namespace :v1 do
       resources :recipes
-      resources :users, only: [:show, :create, :update, :destroy]
-      post '/login', to: 'authentication#login'
+      get '/me', to: 'users#show'
+      scope 'auth' do
+        post '/signup', to: 'auth#signup'
+        post '/login', to: 'auth#login'
+      end
     end
   end
 
