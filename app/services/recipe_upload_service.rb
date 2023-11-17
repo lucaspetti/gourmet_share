@@ -1,3 +1,5 @@
+require 'csv'
+
 class RecipeUploadService
   def initialize(user_id)
     @user = User.find(user_id)
@@ -13,8 +15,8 @@ class RecipeUploadService
 
     @csv.map do |row|
       params = row.to_h.with_indifferent_access
-      params[:ingredients] = row[:ingredients].split(';')
-      params[:preparation_steps] = row[:preparation_steps].split(';')
+      params[:ingredients] = row[:ingredients]&.split(';')
+      params[:preparation_steps] = row[:preparation_steps]&.split(';')
 
       RecipeFactory.create(@user, params)
     end

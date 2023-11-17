@@ -26,8 +26,6 @@ class RecipeFactory
   end
 
   def create_recipe
-    recipe.ingredients = parse_ingredients
-    recipe.preparation_steps = parse_preparation_steps
     recipe.user = @user
     recipe.save!
   end
@@ -38,13 +36,5 @@ class RecipeFactory
 
   def find_or_new_recipe
     Recipe.find_by(user_id: @user.id, title: @params[:title]) || Recipe.new(@params)
-  end
-
-  def parse_ingredients
-    @params[:ingredients]&.split(';')
-  end
-
-  def parse_preparation_steps
-    @params[:preparation_steps]&.split(';')
   end
 end
