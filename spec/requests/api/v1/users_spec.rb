@@ -3,7 +3,8 @@ require 'rails_helper'
 describe 'Api V1 users', type: :request do
   let(:user) { create(:user) }
   let(:client) { create(:client) }
-  let(:token) { user_token(client, user) }
+  let(:access_token) { user_token(client, user) }
+  let(:token) { access_token.token }
   let(:headers) do
     { 'Authorization': "Bearer #{token}" }
   end

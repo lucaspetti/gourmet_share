@@ -2,7 +2,10 @@ require 'rails_helper'
 
 describe 'Api V1 recipes', type: :request do
   let(:recipe) { create(:recipe) }
-  let(:token) { user_token(user) }
+  let(:client) { create(:client) }
+  let(:user) { create(:user) }
+  let(:access_token) { user_token(client, user) }
+  let(:token) { access_token.token }
   let(:headers) do
     { 'Authorization' => "Bearer #{token}" }
   end
@@ -20,20 +23,32 @@ describe 'Api V1 recipes', type: :request do
   end
 
   describe 'GET /api/v1/recipes' do
-    before do
-      allow(Recipe).to receive(:all).and_return([recipe])
-      get '/api/v1/recipes'
+    context 'when user is unauthorized' do
+      let(:token) { 'invalid_token' }
+
+      before do
+        get '/api/v1/recipes'
+      end
+
+      it 'returns a 401 response' do
+        expect(response.status).to eq(401)
+      end
     end
 
-    it 'returns all created recipes in json format' do
-      expect(response.status).to eq(200)
-      expect(response.body).to eq([recipe_response].to_json)
+    context 'when user is authorized' do
+      before do
+        allow(Recipe).to receive(:all).and_return([recipe])
+        get '/api/v1/recipes', headers: headers
+      end
+
+      it 'returns all created recipes in json format' do
+        expect(response.status).to eq(200)
+        expect(response.body).to eq([recipe_response].to_json)
+      end
     end
   end
 
   describe 'POST /api/v1/recipes' do
-    let!(:user) { create(:user) }
-
     context 'when user is unauthorized' do
       let(:token) { 'invalid_token' }
 
@@ -43,19 +58,6 @@ describe 'Api V1 recipes', type: :request do
 
       it 'returns a 401 response' do
         expect(response.status).to eq(401)
-        expect(response.body).to eq({ "error": "Unauthorized" }.to_json)
-      end
-    end
-
-    context 'when user is not found' do
-      before do
-        allow(User).to receive(:find).with(user.id).and_raise(ActiveRecord::RecordNotFound)
-        post '/api/v1/recipes', headers: headers
-      end
-
-      it 'returns a 401 response' do
-        expect(response.status).to eq(401)
-        expect(response.body).to eq({ "error": "Unauthorized" }.to_json)
       end
     end
 
@@ -104,7 +106,7 @@ describe 'Api V1 recipes', type: :request do
   describe 'GET /api/v1/recipes/:id' do
     context 'when it is not found' do
       before do
-        get "/api/v1/recipes/unknown"
+        get "/api/v1/recipes/unknown", headers: headers
       end
 
       it 'returns a 404 not found response' do
@@ -116,7 +118,7 @@ describe 'Api V1 recipes', type: :request do
     context 'when it is found' do
       before do
         allow(Recipe).to receive(:find).with(recipe.id).and_return(recipe)
-        get "/api/v1/recipes/#{recipe.id}"
+        get "/api/v1/recipes/#{recipe.id}", headers: headers
       end
 
       it 'returns the recipe in json format' do

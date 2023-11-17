@@ -12,7 +12,7 @@ module RSpec
         application: client,
         refresh_token: SecureRandom.hex(32),
         expires_in: Doorkeeper.configuration.access_token_expires_in.to_i,
-        scopes: 'read,write'
+        scopes: 'read'
       )
     end
   end

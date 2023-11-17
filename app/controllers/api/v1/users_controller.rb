@@ -4,13 +4,7 @@ module Api
       before_action :doorkeeper_authorize!
 
       def show
-        render json: current_resource_owner
-      end
-
-      private
-
-      def current_resource_owner
-        User.find(doorkeeper_token.resource_owner_id) if doorkeeper_token
+        render json: current_user
       end
     end
   end
